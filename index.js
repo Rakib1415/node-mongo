@@ -20,7 +20,7 @@ app.get('/products', (req, res) => {
   client.connect(err => {
     const collection = client.db("onlineStore").collection("products");
     
-    collection.find().limit(10).toArray((err, documents) => {
+    collection.find().toArray((err, documents) => {
       console.log('inserted...');
       if (err) {
         console.log(err);
@@ -35,10 +35,47 @@ app.get('/products', (req, res) => {
   });
 });
 
-app.get('/users/:id', (req, res) => {
-    const id = req.params.id;
-    const name = users[id];
-    res.send({id, name});
+app.get('/product/:key', (req, res) => {
+    const key = req.params.key;
+    client = new MongoClient(uri, { useNewUrlParser: true });
+    client.connect(err => {
+      const collection = client.db("onlineStore").collection("products");
+      
+      collection.find({key}).toArray((err, documents) => {
+        console.log('inserted...');
+        if (err) {
+          console.log(err);
+        }
+        else {
+          res.send(documents[0]);
+        }
+          
+      })
+      // perform actions on the collection object
+      client.close();
+    });
+})
+
+app.post('/getProductByKey', (req, res) => {
+  const key = req.params.key;
+  const productKeys = req.body;
+  client = new MongoClient(uri, { useNewUrlParser: true });
+  client.connect(err => {
+    const collection = client.db("onlineStore").collection("products");
+    
+    collection.find({key : {$in : productKeys}}).toArray((err, documents) => {
+      console.log('inserted...');
+      if (err) {
+        console.log(err);
+      }
+      else {
+        res.send(documents);
+      }
+        
+    })
+    // perform actions on the collection object
+    client.close();
+  });
 })
 
 // post 
@@ -49,7 +86,7 @@ app.post('/addProduct', (req, res) => {
   client.connect(err => {
     const collection = client.db("onlineStore").collection("products");
     
-    collection.insertOne(product, (err, result) => {
+    collection.insert(product, (err, result) => {
       console.log('inserted...');
       if (err) {
         console.log(err);
@@ -59,11 +96,37 @@ app.post('/addProduct', (req, res) => {
       }
         
     })
+
     // perform actions on the collection object
     client.close();
   });
    
 })
+
+app.post('/placeOrder', (req, res) => {
+  client = new MongoClient(uri, { useNewUrlParser: true });
+  const orderDetails = req.body;
+  orderDetails.orderTime = new Date();
+  client.connect(err => {
+    const collection = client.db("onlineStore").collection("orders");
+    
+    collection.insertOne(orderDetails, (err, result) => {
+      console.log('inserted...');
+      if (err) {
+        console.log(err);
+      }
+      else {
+        res.send(result.ops[0]);
+      }
+        
+    })
+    
+    // perform actions on the collection object
+    client.close();
+  });
+   
+})
+
 
 const port = process.env.PORT || 4200;
 
