@@ -9,8 +9,6 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const users = ['rakib', 'john', 'john Do', 'susmita', 'sabana'];
-
 // DataBase connection
 const uri = process.env.DB_PATH;
 let client = new MongoClient(uri, { useNewUrlParser: true });
@@ -128,6 +126,6 @@ app.post('/placeOrder', (req, res) => {
 })
 
 
-const port = process.env.PORT || 4200;
+const port = process.env.PORT || 8800;
 
 app.listen(port, () => console.log('Listen to port 8800'));
